@@ -2,6 +2,7 @@ package fr.test.taskAppJwt.services;
 
 import fr.test.taskAppJwt.model.dao.RoleRepository;
 import fr.test.taskAppJwt.model.dao.UserRepository;
+import fr.test.taskAppJwt.model.dto.UserDTO;
 import fr.test.taskAppJwt.model.entities.AppRole;
 import fr.test.taskAppJwt.model.entities.AppUser;
 import fr.test.taskAppJwt.services.interfaces.IAccountService;
@@ -11,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Transactional
 @Service
@@ -33,7 +37,6 @@ public class AccountServiceImpl implements IAccountService {
         saveRole(new AppRole(null, "USER"));
 
         addRoleToUser("ADMIN", "admin");
-        addRoleToUser("ADMIN", "user");
         addRoleToUser("USER", "user");
     }
 
@@ -41,6 +44,20 @@ public class AccountServiceImpl implements IAccountService {
     public AppUser saveUser(AppUser user) {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
+    }
+
+    @Override
+    public AppUser saveUser(UserDTO userDTO) {
+        if (!userDTO.getPassword().equals(userDTO.getConfirmPassword()))
+            throw new RuntimeException("Error confirm password");
+
+        if (findUserByName(userDTO.getName()) != null)
+            throw new RuntimeException("Error username already exist");
+
+        List<AppRole> userRoles = new ArrayList<>();
+        userRoles.add(roleRepository.findByName("USER"));
+        AppUser user = new AppUser(null, userDTO.getName(), userDTO.getPassword(), userRoles);
+        return saveUser(user);
     }
 
     @Override
