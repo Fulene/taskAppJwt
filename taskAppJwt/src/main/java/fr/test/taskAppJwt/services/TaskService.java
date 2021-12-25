@@ -14,7 +14,7 @@ public class TaskService {
     @Autowired
     private TaskRepository taskRepository;
 
-    public void mockTasks() {
+    public void mock() {
         Stream.of("T1", "T2", "T3").forEach(t -> {
             taskRepository.save(new Task(null, t));
         });

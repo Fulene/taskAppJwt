@@ -1,7 +1,8 @@
 package fr.test.taskAppJwt.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.test.taskAppJwt.security.JWTAuthenticationFilter;
+import fr.test.taskAppJwt.security.filters.JWTAuthenticationFilter;
+import fr.test.taskAppJwt.security.filters.JWTAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebSecurity
@@ -27,6 +31,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private ObjectMapper objectMapper;
 
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.cors().and().csrf().disable();
+
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); // Important => Permet de desactiver le système de sécurité de base de spring security basé sur les sessions
+
+        http.authorizeRequests().antMatchers(HttpMethod.POST, "/login/**", "/register/**").permitAll();
+        http.authorizeRequests().antMatchers(HttpMethod.POST, "/tasks/**").hasAuthority("ADMIN");
+        http.authorizeRequests().anyRequest().authenticated();
+
+        http.addFilter(new JWTAuthenticationFilter(authenticationManager(), objectMapper));
+        http.addFilterBefore(new JWTAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+    }
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
     /*
@@ -39,18 +58,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     */
         auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder);
 
-    }
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable();
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); // Important => Permet de desactiver le système de sécurité de base de spring security basé sur les sessions
-
-        http.authorizeRequests().antMatchers(HttpMethod.POST, "/login/**", "/register/**").permitAll();
-        http.authorizeRequests().antMatchers(HttpMethod.POST, "/tasks/**").hasAuthority("ADMIN");
-        http.authorizeRequests().anyRequest().authenticated();
-
-        http.addFilter(new JWTAuthenticationFilter(authenticationManager(), objectMapper));
     }
 
 }

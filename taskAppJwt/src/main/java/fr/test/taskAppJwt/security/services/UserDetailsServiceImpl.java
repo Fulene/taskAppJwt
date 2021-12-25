@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +26,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         if (user == null) throw new UsernameNotFoundException("Bad credentials");
 
-        Collection<GrantedAuthority> authorities =
+        System.out.println("2 ========================");
+        System.out.println(user);
+        System.out.println("2 ========================");
+
+        List<GrantedAuthority> authorities =
                 user.getRoles().stream().map(r -> new SimpleGrantedAuthority(r.getName())).collect(Collectors.toList());
 
         return new User(user.getName(), user.getPassword(), authorities);

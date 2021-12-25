@@ -32,12 +32,19 @@ public class AccountServiceImpl implements IAccountService {
     public void mock() {
         saveUser(new AppUser(null, "admin", "admin", new ArrayList<>()));
         saveUser(new AppUser(null, "user", "1234", new ArrayList<>()));
+        saveUser(new AppUser(null, "user2", "1234", new ArrayList<>()));
 
         saveRole(new AppRole(null, "ADMIN"));
         saveRole(new AppRole(null, "USER"));
 
         addRoleToUser("ADMIN", "admin");
         addRoleToUser("USER", "user");
+        addRoleToUser("USER", "user2");
+    }
+
+    public void test() {
+        List<AppUser> users = userRepository.findByRoleId(2);
+        System.out.println(users);
     }
 
     @Override
@@ -56,8 +63,7 @@ public class AccountServiceImpl implements IAccountService {
 
         List<AppRole> userRoles = new ArrayList<>();
         userRoles.add(roleRepository.findByName("USER"));
-        AppUser user = new AppUser(null, userDTO.getName(), userDTO.getPassword(), userRoles);
-        return saveUser(user);
+        return saveUser(new AppUser(null, userDTO.getName(), userDTO.getPassword(), userRoles));
     }
 
     @Override
